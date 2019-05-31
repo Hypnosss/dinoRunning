@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <canvas id="canvas" width="1000" height="300" id="canvas" style="border:1px solid blue;"></canvas>
+    <script>
+        var canvas = document.getElementById("canvas");
+        var btn = document.getElementById("button")
+        var ctx = canvas.getContext("2d");
+        var image = new Image();
+        var speed = 5;
+        const speedup = 0;
+        var stopFlag = 0;
+        var score = 0;
+
+        const canvasWidth = canvas.width;
+        const canvasHeight = canvas.height;
+        const roadHeight = 50;
+        const dinoHeight = 50;
+        const dinoWidth = 50;
+        const obsHeight = 50;
+        const obsWidth = 50;
+        const jumpTime = 600;
+        const jumpHeight = 150;
+
+        image.src = "./11256468924bf4dd3el.jpg";
+        
+        
+        
+        //main
+        window.onload = function() {
+            drawAll();
+        }
+
+        function drawAll() {
+            ctx.clearRect(0,0,canvasHeight,canvasWidth);
+            updateRoad();
+            drawDino(dinoy);
+            updateObs();
+            areYouFail();
+            speed += speedup//speed upppp!!!!!!!
+            scoreup();
+            if(stopFlag == 0){
+                window.requestAnimationFrame(drawAll);
+            }    
+        }
+
+
+        //score
+        function scoreup() {
+            score += 1;
+            // console.log("score" + score);
+        }
+
+
+
+
+
+
+
+        //road
+        var roadx = [0,canvasWidth];
+        function updateRoad() {
+            roadx[0] -= speed;
+            roadx[1] = (roadx[0] > 0) ? (roadx[0] - canvasWidth) : (roadx[0] + canvasWidth);
+            if(roadx[0] <= -canvasWidth) {
+                roadx[0] = canvasWidth;
+            }
+            drawRoad(roadx[0], roadx[1]);
+        }
+
+        function drawRoad(x1, x2) {
+            // console.log(x1, x2)
+            ctx.drawImage(image, x1, canvasHeight - roadHeight, canvasWidth, roadHeight);
+            ctx.drawImage(image, x2, canvasHeight - roadHeight, canvasWidth, roadHeight);
+        }
+
+
+
+
+
+        //dino
+        var dinoy = canvasHeight - roadHeight - dinoHeight;
+        function drawDino(dinoy) {
+            //console.log(dinoy)
+            ctx.clearRect(0,0,canvasWidth,canvasHeight - roadHeight);
+            ctx.drawImage(image, 0, dinoy, dinoWidth, dinoHeight)
+        }
+
+        var dinoTime = 0;
+        var ainterval;
+        function updateDino() {
+            //console.log(dinoTime)
+            if(dinoTime == 0) {
+                clearInterval(ainterval);
+                ainterval = setInterval(() => { 
+                    dinoy = 4 * jumpHeight / Math.pow(jumpTime / 1000, 2) * Math.pow(dinoTime/1000 - jumpTime/2000, 2) + (canvasHeight - roadHeight - dinoHeight - jumpHeight);
+                    // console.log(dinoy)
+                    dinoTime += 4;
+                    if(dinoTime > jumpTime) {
+                        dinoTime = 0;
+                        //console.log("clear!");
+                        clearInterval(ainterval);
+                        dinoy = canvasHeight - roadHeight - dinoHeight;
+                    }
+                }, 4);
+            }
+        }
+
+        document.onkeydown = function(e) {
+            if(e.code == "Space"){
+                updateDino();
+                //console.log(1)
+            }
+        }
+
+
+
+
+
+        //obs
+        var obsx = [canvasWidth, 9999];
+        var obsn = 0;
+        var minGap = 0;
+        function createObs(i, minGap) {
+            // console.log(minGap)
+            if(i == 0) {
+                if(obsx[1] == 9999) {
+                    obsx[0] = (1 + Math.random()) * canvasWidth;
+                }else {
+                    obsx[0] = (canvasWidth - minGap) * Math.random() + minGap + canvasWidth;
+                }
+            }else {
+                if(obsx[0] == 9999) {
+                    obsx[1] = (1 + Math.random()) * canvasWidth;
+                }else {
+                    obsx[1] = (canvasWidth - minGap) * Math.random() + minGap + canvasWidth;
+                }
+            }
+
+            // obsx[i] = (1 + Math.random()) * canvasWidth;
+            obsn ++;
+        }
+
+        function updateObs() {
+            // console.log(obsx[0], obsx[1])
+            if(obsn <= 2){
+                for(let i = 0; i < 2; i++) {
+                    if(obsx[i] > 2 * canvasWidth) {//未被启用
+                        // console.log(i + "1")
+                        minGap = (1 - Math.sqrt((jumpHeight - obsHeight) / jumpHeight)) * jumpTime * speed;  
+                        console.log(minGap);
+                        createObs(i, minGap);
+                    }else {//被启用
+                        // console.log(i + "in use")
+                        obsx[i] -= speed;
+                        if(obsx[i] < -obsWidth) {//结束
+                            // console.log(i + "!!!!!!")
+                            obsx[i] = 9999;
+                            obsn --;
+                        }
+                        drawObs(obsx[i])
+                    }
+                }
+            }
+        }
+        
+
+        function drawObs(x1) {
+            ctx.drawImage(image, x1, canvasHeight - roadHeight - obsHeight, obsWidth, obsHeight);
+        }
+
+
+
+
+
+        //fail
+        function areYouFail() {
+            for(let i = 0; i < obsx.length; i++) {
+                if(obsx[i] > -obsWidth && obsx[i] <= dinoWidth) {
+                    // console.log(dinoy)
+                    if(dinoy >= canvasHeight - roadHeight - obsHeight - dinoHeight){
+                        console.log("failed!!!!!!!!!");
+                        // console.log(dinoy)
+                        // stopFlag = 1;
+                    }
+                }
+            }
+            
+        }
+    </script>
+</body>
+</html>
+
+
